@@ -1,58 +1,36 @@
--- Create Database
-CREATE DATABASE domain_related_database;
+CREATE DATABASE LibraryManagement;
 
--- Connect to the Database
-\c domain_related_database;
 
--- Create Schema
-CREATE SCHEMA domain_related_schema;
+CREATE SCHEMA LibraryData;
 
--- Create Users Table
-CREATE TABLE domain_related_schema.Users (
-    UserID SERIAL PRIMARY KEY,
-    UserName VARCHAR(50) NOT NULL,
-    Gender CHAR(1) CHECK (Gender IN ('M', 'F')),
-    Birthdate DATE CHECK (Birthdate > '2000-01-01'),
-    Record_ts DATE DEFAULT current_date
+CREATE TABLE LibraryData.Books (
+    BookID SERIAL PRIMARY KEY,
+    Title VARCHAR(255) NOT NULL,
+    PublicationDate DATE CHECK (PublicationDate > '2000-01-01'),
+    Genre VARCHAR(50) NOT NULL,
+    Price DECIMAL CHECK (Price > 0),
+    AuthorID INTEGER 
 );
 
--- Create MeasuredValues Table
-CREATE TABLE domain_related_schema.MeasuredValues (
-    ValueID SERIAL PRIMARY KEY,
-    UserID INT REFERENCES domain_related_schema.Users(UserID),
-    Value NUMERIC NOT NULL CHECK (Value >= 0),
-    MeasurementDate DATE CHECK (MeasurementDate > '2000-01-01'),
-    Record_ts DATE DEFAULT current_date
+
+CREATE TABLE LibraryData.Authors (
+    AuthorID SERIAL PRIMARY KEY,
+    Name VARCHAR(255) NOT NULL,
+    Birthdate DATE NOT NULL,
+    Gender VARCHAR(50) CHECK (Gender IN ('Male', 'Female', 'Other'))
 );
 
--- Insert sample data into Users table
-INSERT INTO domain_related_schema.Users (UserName, Gender, Birthdate) VALUES
-    ('John Doe', 'M', '2000-05-15'),
-    ('Jane Smith', 'F', '1998-10-20');
 
--- Insert sample data into MeasuredValues table
-INSERT INTO domain_related_schema.MeasuredValues (UserID, Value, MeasurementDate) VALUES
-    (1, 75.5, '2023-01-15'),
-    (2, 62.3, '2023-02-20');
+ALTER TABLE LibraryData.Books
+ADD CONSTRAINT FK_Book_Author
+FOREIGN KEY (AuthorID)
+REFERENCES LibData.Authors (AuthorID);
 
--- Apply CHECK Constraints for Gender and Positive Value
-ALTER TABLE domain_related_schema.Users
-ADD CONSTRAINT chk_specific_gender CHECK (Gender IN ('M', 'F'));
 
-ALTER TABLE domain_related_schema.MeasuredValues
-ADD CONSTRAINT chk_positive_value CHECK (Value >= 0);
+INSERT INTO LibraryData.Books (Title, PublicationDate, Genre, Price) VALUES ('The Great Gatsby', '2020-04-10', 'Classic', 19.99);
 
--- Create UNIQUE Constraints for UserName and Measurement
-ALTER TABLE domain_related_schema.Users
-ADD CONSTRAINT unique_username UNIQUE (UserName);
 
-ALTER TABLE domain_related_schema.MeasuredValues
-ADD CONSTRAINT unique_measurement UNIQUE (UserID, MeasurementDate);
+ALTER TABLE LibraryData.Books ADD COLUMN record_ts DATE DEFAULT CURRENT_DATE;
 
--- Add 'record_ts' Field to Users Table
-ALTER TABLE domain_related_schema.Users
-ADD COLUMN record_ts DATE DEFAULT current_date;
 
--- Add 'record_ts' Field to MeasuredValues Table
-ALTER TABLE domain_related_schema.MeasuredValues
-ADD COLUMN record_ts DATE DEFAULT current_date;
+SELECT * FROM LibraryData.Books;
